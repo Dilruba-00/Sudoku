@@ -2,7 +2,7 @@ const puzzleBoard = document.querySelector('#puzzle')
 const solveButton = document.querySelector('#solve-button')
 const solutionDisplay = document.querySelector('#explainer')
 const squares = 81
-const submission = []
+let submission = []
 
 for(let i = 0; i < squares; i++) {
     const inputElement = document.createElement('input')
@@ -41,33 +41,33 @@ const populateValues = (isSolvable, solution) => {
         inputs.forEach((input, i) => {
             input.value = solution[i]
         })
-        solutionDisplay.innerHTML = "tis is the answer"
+        solutionDisplay.innerHTML = "this is the answer"
     } else{
-        solutionDisplay.innerHTML = "tis is thnot solvable"
+        solutionDisplay.innerHTML = "this is thnot solvable"
     }
 }
 
-const value = () => {
+const solve = () => {
     joinValues()
-    const data = submission.join('')
+    const data = { numbers: submission.join('')}
     console.log('data', data)
-    const options = {
-        method:'POST',
-        url: 'https://solve-sudoku.p.rapidapi.com/',
+    
+    fetch('http://localhost:8000/solve', {
+        method: 'POST',
         headers: {
-            'content-type': 'application/json',
-            'x-rapidapi-host': 'solve-sudoku.p.rapidapi.com', 'x-rapidapi-key': '6835772f3emsh8db59b19eep132ed4jsndd22b502a839'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
         },
-        data: {
-            puzzle: data
-        }
-    };
-
-    axios.request(options).then((response) => {
-        console.log(response.data)
-        populateValues(response.data.solvable, response.data.solution)
-    }).catch((error) => {
-        console.error(error)
+        body: JSON.stringify(data) 
+    })  .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            populateValues(data.isSolvable, data.solution)
+            submission = []
+        
+        })
+        .catch((error) => {
+            console.error('Error:', error)
     })
 }
 solveButton.addEventListener('click', solve)
